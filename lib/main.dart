@@ -1,6 +1,7 @@
 import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'dart:convert';
 
 void main() {
   runApp(const MyApp());
@@ -31,7 +32,63 @@ class MyHomePage extends StatefulWidget {
 
 class MyController extends GetxController {
   showcats() => showcategorias.value = !showcategorias.value;
-
+  final catsAPI = <Category>[
+    Category(desc: 'Orbita', id: 1, produtorId: 1, subCategorias: [
+      Category(
+        id: 2,
+        desc: 'nome 2',
+      ),
+      Category(
+        id: 3,
+        desc: 'nome 3',
+      ),
+      Category(
+        id: 4,
+        desc: 'nome 4',
+      ),
+      Category(
+        id: 5,
+        desc: 'nome 5',
+      )
+    ]),
+    Category(desc: 'Categoria2', id: 1, produtorId: 1, subCategorias: [
+      Category(
+        id: 2,
+        desc: 'nome 2',
+      ),
+      Category(
+        id: 3,
+        desc: 'nome 3',
+      ),
+      Category(
+        id: 4,
+        desc: 'nome 4',
+      ),
+      Category(
+        id: 5,
+        desc: 'nome 5',
+      )
+    ]),
+    Category(desc: 'categoria3', id: 1, produtorId: 1, subCategorias: [
+      Category(
+        id: 2,
+        desc: 'nome 2',
+      ),
+      Category(
+        id: 3,
+        desc: 'nome 3',
+      ),
+      Category(
+        id: 4,
+        desc: 'nome 4',
+      ),
+      Category(
+        id: 5,
+        desc: 'nome 5',
+      )
+    ])
+  ];
+  final selecteds = [].obs;
   final categoriasAPI = <Categorias>[
     Categorias(id: 1, nome: 'NOME1'),
     Categorias(id: 2, nome: 'NOME2'),
@@ -54,6 +111,138 @@ class MyController extends GetxController {
   }
 }
 
+class _MyHomePageState extends State<MyHomePage> {
+  MyController? controller;
+  @override
+  Widget build(BuildContext context) {
+    controller = Get.put(MyController());
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Expanded(
+              child: ListView.builder(
+                  itemCount: controller!.catsAPI.length,
+                  itemBuilder: (_, __) => Container(
+                        height: 150,
+                        width: Get.width,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ExpandablePanel(
+                              header: Padding(
+                                padding: const EdgeInsets.only(
+                                  left: 8.0,
+                                ),
+                                child: Text(
+                                  controller!.catsAPI[__].desc!,
+                                  style: TextStyle(
+                                      fontSize: 16.0,
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              theme: ExpandableThemeData(
+                                  hasIcon: true,
+                                  fadeCurve: Curves.easeInOut,
+                                  tapHeaderToExpand: true,
+                                  iconColor: Colors.red,
+                                  iconSize: 32.0),
+                              controller:
+                                  ExpandableController(initialExpanded: false),
+                              collapsed: Container(
+                                height: 100,
+                                child: Column(children: [
+                                  MaterialButton(
+                                    onPressed: () => controller!
+                                        .expandController.expanded = true,
+                                    color: Colors.yellow,
+                                    child: Text('Exibir categorias'),
+                                  ),
+                                ]),
+                              ),
+                              expanded: Container(
+                                height: 500.0, // lista de categoria card
+                                width: Get.width,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('${controller!.catsAPI[__].desc}'),
+                                    MaterialButton(
+                                      onPressed: () => controller!
+                                          .expandController.expanded = true,
+                                      color: Colors.yellow,
+                                      child: Text('Ocultar categorias'),
+                                    ),
+                                    MaterialButton(
+                                        onPressed: () =>
+                                            controller!.selectedCategories),
+                                    Expanded(
+                                      child: ListView.builder(
+                                          // lista de subcategorias
+                                          itemCount: controller!.catsAPI[__]
+                                              .subCategorias!.length,
+                                          itemBuilder: (c, index) => Container(
+                                                height: 60,
+                                                child: Obx(
+                                                  () => GestureDetector(
+                                                    onTap: () => controller!
+                                                        .selectCat(controller!
+                                                                .catsAPI[__]
+                                                                .subCategorias![
+                                                            index]),
+                                                    child: Container(
+                                                        // margin: EdgeInsets.symmetric(horizontal: 5),
+                                                        width: 130,
+                                                        height: 40,
+                                                        decoration:
+                                                            const BoxDecoration(
+                                                          borderRadius:
+                                                              BorderRadius.all(
+                                                                  Radius
+                                                                      .circular(
+                                                                          25)),
+                                                          color: Colors.grey,
+                                                        ),
+                                                        margin: const EdgeInsets
+                                                            .all(5),
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(5),
+                                                        child: Text(
+                                                          '${controller!.catsAPI[__].subCategorias![index].desc}',
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          style: TextStyle(
+                                                              color: controller!
+                                                                      .selectedCategories
+                                                                      .contains(controller!
+                                                                          .catsAPI[
+                                                                              __]
+                                                                          .subCategorias![index])
+                                                                  ? Colors.white
+                                                                  : Colors.black),
+                                                        )),
+                                                  ),
+                                                ),
+                                              )),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class Categorias {
   String? nome;
   int? id;
@@ -61,110 +250,49 @@ class Categorias {
   Categorias({this.id, this.nome});
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+// To parse this JSON data, do
+//
+//     final category = categoryFromJson(jsonString);
 
-  MyController? controller;
-  @override
-  Widget build(BuildContext context) {
-    controller = Get.put(MyController());
-    return Scaffold(
-      body: SafeArea(
-        child: Container(
-          height: Get.height,
-          width: Get.width,
-          padding: const EdgeInsets.all(8.0),
-          child: Container(
-            height: Get.width / 2,
-            color: Colors.black.withOpacity(.5),
-            child: ExpandablePanel(
-              header: const Padding(
-                padding: EdgeInsets.only(left: 8.0, top: 8.0),
-                child: Text(
-                  'Teste',
-                  style: TextStyle(
-                      fontSize: 16.0,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold),
-                ),
-              ),
-              collapsed: Container(
-                height: 50,
-                child: MaterialButton(
-                  color: Colors.blue,
-                  onPressed: () => controller!.expandController.expanded = true,
-                  child: const Text(
-                    'Exibir categorias',
-                  ),
-                ),
-              ),
-              theme: ExpandableThemeData(
-                  hasIcon: true,
-                  fadeCurve: Curves.easeInOut,
-                  iconColor: Colors.yellow,
-                  iconSize: 32.0),
-              expanded: Container(
-                height: 200,
-                child: Column(
-                  children: <Widget>[
-                    Container(
-                      height: 50,
-                      child: MaterialButton(
-                        color: Colors.blue,
-                        onPressed: () =>
-                            controller!.expandController.expanded = false,
-                        child: const Text(
-                          'Ocultar categorias',
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
-                        child: Wrap(
-                          spacing: -1,
-                          direction: Axis.vertical,
-                          children: controller!.categoriasAPI
-                              .map(
-                                (element) => Obx(
-                                  () => GestureDetector(
-                                    onTap: () => controller!.selectCat(element),
-                                    child: Container(
-                                        // margin: EdgeInsets.symmetric(horizontal: 5),
-                                        width: 130,
-                                        height: 40,
-                                        decoration: const BoxDecoration(
-                                          borderRadius: BorderRadius.all(
-                                              Radius.circular(25)),
-                                          color: Colors.grey,
-                                        ),
-                                        margin: const EdgeInsets.all(5),
-                                        padding: const EdgeInsets.all(5),
-                                        child: Text(
-                                          element.nome!,
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                              color: controller!
-                                                      .selectedCategories
-                                                      .contains(element)
-                                                  ? Colors.white
-                                                  : Colors.black),
-                                        )),
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-              ),
-              controller: controller!.expandController,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+List<Category> categoryFromJson(String str) =>
+    List<Category>.from(json.decode(str).map((x) => Category.fromJson(x)));
+
+String categoryToJson(List<Category> data) =>
+    json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+
+class Category {
+  Category({
+    this.id,
+    this.desc,
+    this.parentId,
+    this.produtorId,
+    this.subCategorias,
+  });
+
+  int? id;
+  String? desc;
+  int? parentId;
+  int? produtorId;
+  List<Category>? subCategorias;
+
+  factory Category.fromJson(Map<String, dynamic> json) => Category(
+        id: json["id"],
+        desc: json["desc"],
+        parentId: json["parent_id"] == null ? null : json["parent_id"],
+        produtorId: json["produtor_id"],
+        subCategorias: json["sub_categorias"] == null
+            ? null
+            : List<Category>.from(
+                json["sub_categorias"].map((x) => Category.fromJson(x))),
+      );
+
+  Map<String, dynamic> toJson() => {
+        "id": id,
+        "desc": desc,
+        "parent_id": parentId == null ? null : parentId,
+        "produtor_id": produtorId,
+        "sub_categorias": subCategorias == null
+            ? null
+            : List<dynamic>.from(subCategorias!.map((x) => x.toJson())),
+      };
 }
